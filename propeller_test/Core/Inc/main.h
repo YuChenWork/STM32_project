@@ -59,6 +59,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define Throttle_down_Pin GPIO_PIN_11
+#define Throttle_down_GPIO_Port GPIOA
+#define Throttle_up_Pin GPIO_PIN_12
+#define Throttle_up_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

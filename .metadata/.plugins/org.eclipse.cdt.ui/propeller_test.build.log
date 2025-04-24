@@ -1,0 +1,31 @@
+23:25:28 **** Incremental Build of configuration Debug for project propeller_test ****
+make -j12 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:125:11: warning: implicit declaration of function 'read_buttons_and_update_throttle' [-Wimplicit-function-declaration]
+  125 |           read_buttons_and_update_throttle();
+      |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c: At top level:
+../Core/Src/main.c:139:6: warning: conflicting types for 'read_buttons_and_update_throttle'; have 'void()'
+  139 | void read_buttons_and_update_throttle() {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:125:11: note: previous implicit declaration of 'read_buttons_and_update_throttle' with type 'void()'
+  125 |           read_buttons_and_update_throttle();
+      |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:106:8: warning: 'esc_calibration_sequence' defined but not used [-Wunused-function]
+  106 |   void esc_calibration_sequence(void) {
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "propeller_test.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\jkbe3\OneDrive\桌面\STM32_project\propeller_test\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="propeller_test.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: propeller_test.elf
+ 
+arm-none-eabi-size  propeller_test.elf 
+arm-none-eabi-objdump -h -S propeller_test.elf  > "propeller_test.list"
+   text	   data	    bss	    dec	    hex	filename
+   8280	     28	   1644	   9952	   26e0	propeller_test.elf
+Finished building: default.size.stdout
+ 
+Finished building: propeller_test.list
+ 
+
+23:25:28 Build Finished. 0 errors, 3 warnings. (took 570ms)
+

@@ -21,7 +21,13 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+// 油門檔位對應的 PWM duty (以 TIM3 1MHz 為例)
+uint16_t throttle_pwm_values[] = {1000, 1200, 1400, 1600, 1800, 1900, 2000};
+uint8_t throttle_level = 0; // 對應 throttle_pwm_values[throttle_level]
 
+// 紀錄按鍵狀態（防止長按觸發多次）
+uint8_t last_up_state = 1;
+uint8_t last_down_state = 1;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -90,15 +96,34 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, throttle_pwm_values[throttle_level]);
   /* USER CODE END 2 */
+  void set_pwm_us(uint16_t us) {
+      // 假設 timer 預設為 1us per tick，Period = 20000
+      __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, us);
+  }
+  void esc_calibration_sequence(void) {
+      // 啟動PWM
+      HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 
+      // 步驟1: 傳送最大油門
+      set_pwm_us(2000);
+      HAL_Delay(3000); // 等ESC發出提示音
+
+      // 步驟2: 傳送最小油門
+      set_pwm_us(1000);
+      HAL_Delay(3000); // 等ESC完成校正啟動
+
+      // 校正完成後保留最小油門
+  }
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  read_buttons_and_update_throttle();
+	  HAL_Delay(10);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -108,6 +133,40 @@ int main(void)
   * @brief System Clock Configuration
   * @retval None
   */
+void update_pwm() {
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, throttle_pwm_values[throttle_level]);
+}
+void read_buttons_and_update_throttle() {
+    // 讀取按鍵
+    uint8_t up_now = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12);
+    uint8_t down_now = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11);
+
+    // === 按鍵上升邊緣偵測 ===
+
+    if (up_now == GPIO_PIN_RESET && last_up_state == GPIO_PIN_SET) {
+        HAL_Delay(50); // debounce
+        if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12) == GPIO_PIN_RESET) {
+            if (throttle_level < 6) {
+                throttle_level++;
+                update_pwm();
+            }
+        }
+    }
+
+    if (down_now == GPIO_PIN_RESET && last_down_state == GPIO_PIN_SET) {
+        HAL_Delay(50); // debounce
+        if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11) == GPIO_PIN_RESET) {
+            if (throttle_level > 0) {
+                throttle_level--;
+                update_pwm();
+            }
+        }
+    }
+
+    // 記錄上次狀態
+    last_up_state = up_now;
+    last_down_state = down_now;
+}
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -209,12 +268,19 @@ static void MX_TIM3_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pins : Throttle_down_Pin Throttle_up_Pin */
+  GPIO_InitStruct.Pin = Throttle_down_Pin|Throttle_up_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
