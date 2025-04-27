@@ -22,7 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 // 油門檔位對應的 PWM duty (以 TIM3 1MHz 為例)
-uint16_t throttle_pwm_values[] = {1000, 1200, 1400, 1600, 1800, 1900, 2000};
+uint16_t throttle_pwm_values[] = {1000, 1120, 1240, 1360, 1480, 1540, 1600};
 uint8_t throttle_level = 0; // 對應 throttle_pwm_values[throttle_level]
 
 // 紀錄按鍵狀態（防止長按觸發多次）
